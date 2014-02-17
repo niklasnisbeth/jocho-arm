@@ -45,17 +45,11 @@ const uint16_t Sine12bit[32] = {
                       599, 344, 155, 38, 0, 38, 155, 344, 599, 909, 1263, 1647};
 const uint8_t Escalator8bit[6] = {0x0, 0x33, 0x66, 0x99, 0xCC, 0xFF};
 
-__IO uint8_t SelectedWavesForm = 0;
-__IO uint8_t KeyPressed = SET; 
-
 /* Private function prototypes -----------------------------------------------*/
 void TIM6_Config(void);
 
 void DAC_Ch1_EscalatorConfig(void);
 void DAC_Ch2_SineWaveConfig(void);
-
-void DAC_Ch1_NoiseConfig(void);
-void DAC_Ch2_TriangleConfig(void);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -90,43 +84,6 @@ int main(void)
 
   /* TIM6 Configuration ------------------------------------------------------*/
   TIM6_Config();  
-  
-  /* Configures User Button */
-  STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI);
-  
-  while (1)
-  {
-    /* If the User Button is pressed */
-    if (KeyPressed == RESET)
-    {            
-      DAC_DeInit(); 
-
-      /* select waves forms according to the Key Button status */
-      if (SelectedWavesForm == 1)
-      {
-        /* The sine wave and the escalator wave has been selected */
-
-        /* Escalator Wave generator ------------------------------------------*/
-        DAC_Ch1_EscalatorConfig();
-
-        /* Sine Wave generator -----------------------------------------------*/
-        DAC_Ch2_SineWaveConfig();
-         
-      }
-      else
-      {
-        /* The triangle wave and the noise wave has been selected */
-
-        /* Noise Wave generator ----------------------------------------------*/
-        DAC_Ch1_NoiseConfig();
-
-        /* Triangle Wave generator -------------------------------------------*/
-        DAC_Ch2_TriangleConfig();
-      }
-      
-      KeyPressed = SET; 
-    }
-  }
 }
 
 /**
@@ -243,48 +200,6 @@ void DAC_Ch1_EscalatorConfig(void)
 
   /* Enable DMA for DAC Channel1 */
   DAC_DMACmd(DAC_Channel_1, ENABLE);
-}
-
-/**
-  * @brief  DAC Channel2 Triangle Configuration
-  * @param  None
-  * @retval None
-  */
-void DAC_Ch2_TriangleConfig(void)
-{
- /* DAC channel2 Configuration */
-  DAC_InitStructure.DAC_Trigger = DAC_Trigger_T6_TRGO;
-  DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_Triangle;
-  DAC_InitStructure.DAC_LFSRUnmask_TriangleAmplitude = DAC_TriangleAmplitude_1023;
-  DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
-  DAC_Init(DAC_Channel_2, &DAC_InitStructure);
-
-  /* Enable DAC Channel2 */
-  DAC_Cmd(DAC_Channel_2, ENABLE);
-
-  /* Set DAC channel2 DHR12RD register */
-  DAC_SetChannel2Data(DAC_Align_12b_R, 0x100);
-}
-
-/**
-  * @brief  DAC  Channel1 Noise Configuration
-  * @param  None
-  * @retval None
-  */
-void DAC_Ch1_NoiseConfig(void)
-{
- /* DAC channel1 Configuration */
-  DAC_InitStructure.DAC_Trigger = DAC_Trigger_T6_TRGO;
-  DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_Noise;
-  DAC_InitStructure.DAC_LFSRUnmask_TriangleAmplitude = DAC_LFSRUnmask_Bits10_0;
-  DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
-  DAC_Init(DAC_Channel_1, &DAC_InitStructure);
-
-  /* Enable DAC Channel1 */
-  DAC_Cmd(DAC_Channel_1, ENABLE);
-
-  /* Set DAC Channel1 DHR12L register */
-  DAC_SetChannel1Data(DAC_Align_12b_L, 0x7FF0);
 }
 
 #ifdef  USE_FULL_ASSERT

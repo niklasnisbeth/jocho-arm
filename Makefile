@@ -42,7 +42,7 @@ SRCS  += stm32f4xx_syscfg.c
 SRCS  += stm32f4xx_exti.c
 SRCS  += misc.c
 
-SRCS  += stm32f4_discovery.c
+#SRCS  += stm32f4_discovery.c
 
 # Startup file written by ST
 # The assembly code in this file is the first one to be
