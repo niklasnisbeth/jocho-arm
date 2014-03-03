@@ -16,14 +16,13 @@ STM_DIR=/home/niklas/code/STM32F4-Discovery_FW_V1.1.0
 # (the sources of the standard peripheral library, which we use)
 # see also "info:/make/Selective Search" in Konqueror
 STM_SRC = $(STM_DIR)/Libraries/STM32F4xx_StdPeriph_Driver/src
-STM_SRC += $(STM_DIR)/Utilities/STM32F4-Discovery
 
 # Tell make to look in that folder if it cannot find a source
 # in the current directory
 vpath %.c $(STM_SRC)
 
 # My source file
-SRCS   = main.c
+SRCS   = main.c voice.c counter.c
 
 # Contains initialisation code and must be compiled into
 # our project. This file is in the current directory and
@@ -34,15 +33,11 @@ SRCS  += system_stm32f4xx.c
 # make finds them by searching the vpath defined above.
 SRCS  += stm32f4xx_rcc.c 
 SRCS  += stm32f4xx_gpio.c
-SRCS  += stm32f4xx_usart.c
 SRCS  += stm32f4xx_dma.c
 SRCS  += stm32f4xx_dac.c
 SRCS  += stm32f4xx_tim.c
 SRCS  += stm32f4xx_syscfg.c
-SRCS  += stm32f4xx_exti.c
 SRCS  += misc.c
-
-#SRCS  += stm32f4_discovery.c
 
 # Startup file written by ST
 # The assembly code in this file is the first one to be
@@ -81,7 +76,7 @@ GDB     = $(TOOLS_DIR)/arm-none-eabi-gdb
 INCLUDE = $(addprefix -I,$(INC_DIRS))
 
 # #defines needed when working with the STM library
-DEFS    = -DUSE_STDPERIPH_DRIVER
+DEFS    = -DUSE_STDPERIPH_DRIVER #-DUSE_FULL_ASSERT
 # if you use the following option, you must implement the function 
 #    assert_failed(uint8_t* file, uint32_t line)
 # because it is conditionally used in the library
@@ -91,7 +86,7 @@ DEFS    += -DSTM32F40XX
 
 ## Compiler options
 CFLAGS  = -ggdb
-CFLAGS += -O3
+#CFLAGS += -O3
 CFLAGS += -Wall -Wextra -Warray-bounds
 CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m4 -mthumb-interwork
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
