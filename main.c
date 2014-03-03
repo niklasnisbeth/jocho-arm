@@ -87,7 +87,7 @@ main(void)
   voice_init(&voice2, sine, SINE_SIZE, 3);
   voice_init(&voice3, sine, SINE_SIZE, 3);
 
-  counter_init(&sh_counter, 4);
+  counter_init(&sh_counter, 3);
 
   /* Preconfiguration before using DAC----------------------------------------*/
   GPIO_InitTypeDef GPIO_InitStructure;
@@ -118,8 +118,8 @@ main(void)
   GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_TIM5); 
 
   /* DAC & DMA initial init */
-  DMA_Config(DMA1_Stream6, &buffer1[0], &buffer1[BUFFER_SIZE], BUFFER_SIZE, DAC_Channel_1);
-  DMA_Config(DMA1_Stream5, &buffer2[0], &buffer2[BUFFER_SIZE], BUFFER_SIZE, DAC_Channel_2);
+  DMA_Config(DMA1_Stream5, &buffer1[0], &buffer1[BUFFER_SIZE], BUFFER_SIZE, DAC_Channel_1);
+  DMA_Config(DMA1_Stream6, &buffer2[0], &buffer2[BUFFER_SIZE], BUFFER_SIZE, DAC_Channel_2);
 
   DAC_Config(DAC_Channel_1);
   DAC_Config(DAC_Channel_2);
@@ -235,7 +235,7 @@ Strobe_TIM_Config(void)
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE); 
   
   TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
-  TIM_TimeBaseStructure.TIM_Period = 0x800-1;
+  TIM_TimeBaseStructure.TIM_Period = 0x600-1;
   TIM_TimeBaseStructure.TIM_Prescaler = 0;
   TIM_TimeBaseStructure.TIM_ClockDivision = 0;
   TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; 
@@ -244,8 +244,8 @@ Strobe_TIM_Config(void)
   TIM_OCStructInit(&TIM_OCInitStructure);
   TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2;
   TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-  TIM_OCInitStructure.TIM_Pulse = 0x100;
-  TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High; 
+  TIM_OCInitStructure.TIM_Pulse = 0x170;
+  TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low;
   TIM_OC3Init(TIM5, &TIM_OCInitStructure); 
   
   TIM_ICStructInit(&TIM_ICInitStructure);
