@@ -17,12 +17,16 @@ STM_DIR=/home/niklas/code/STM32F4-Discovery_FW_V1.1.0
 # see also "info:/make/Selective Search" in Konqueror
 STM_SRC = $(STM_DIR)/Libraries/STM32F4xx_StdPeriph_Driver/src
 
+SRC_DIRS += $(STM_SRC)
+
 # Tell make to look in that folder if it cannot find a source
 # in the current directory
-vpath %.c $(STM_SRC)
+vpath %.c $(SRC_DIRS)
 
 # My source file
-SRCS   = main.c voice.c counter.c
+SRCS = main.c counter.c 
+SRCS += synth/env.c synth/op.c synth/algorithms.c synth/voice.c
+
 
 # Contains initialisation code and must be compiled into
 # our project. This file is in the current directory and
@@ -51,10 +55,11 @@ INC_DIRS += $(STM_DIR)/Libraries/STM32F4xx_StdPeriph_Driver/inc
 INC_DIRS += $(STM_DIR)/Utilities/STM32F4-Discovery
 INC_DIRS += $(STM_DIR)/Utilities/STM32_EVAL/Common
 INC_DIRS += .
+INC_DIRS += synth
 
 # in case we have to many sources and don't want 
 # to compile all sources every time
-# OBJS = $(SRCS:.c=.o)
+OBJS = $(SRCS:.c=.o)
 
 ######################################################################
 #                         SETUP TOOLS                                #

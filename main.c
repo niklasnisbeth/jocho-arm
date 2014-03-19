@@ -2,12 +2,12 @@
 #include "stm32f4_discovery.h"
 #include "misc.h"
 
-#include "voice.h"
+#include "synth/voice.h"
 #include "counter.h"
 
 /* Private define ------------------------------------------------------------*/
-#define DAC_DHR12R1_ADDRESS 0x40007408
-#define DAC_DHR12R2_ADDRESS 0x40007414
+#define DAC_DHR12L1_ADDRESS 0x4000740C
+#define DAC_DHR12L2_ADDRESS 0x40007418
 
 #define SINE_SIZE 32
 #define RAMP_SIZE 6
@@ -22,8 +22,6 @@ volatile uint32_t ptr1 = 0;
 volatile uint32_t ptr2 = 0;
 
 struct voice_t voice1;
-struct voice_t voice2;
-struct voice_t voice3;
 struct counter_t sh_counter;
 
 const uint16_t sine[SINE_SIZE] = {
@@ -83,9 +81,7 @@ TIM4_IRQHandler(void)
 int 
 main(void)
 {
-  voice_init(&voice1, sine, SINE_SIZE, 2);
-  voice_init(&voice2, sine, SINE_SIZE, 3);
-  voice_init(&voice3, sine, SINE_SIZE, 3);
+  voice_init(&voice1);
 
   counter_init(&sh_counter, 3);
 
@@ -101,7 +97,7 @@ main(void)
   /* DAC channel 1 & 2 (DAC_OUT1 = PA.4)(DAC_OUT2 = PA.5) configuration */
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
   GPIO_Init(GPIOA, &GPIO_InitStructure);
 
@@ -127,24 +123,27 @@ main(void)
   DAC_TIM_Config(); 
   Strobe_TIM_Config();
 
+  voice_trigger(&voice1);
+
   while(1) {
     if(ptr1<BUFFER_SIZE) {
       //channel1
-      buffer1[(!DMA_GetCurrentMemoryTarget(DMA1_Stream6))*BUFFER_SIZE+ptr1] = voice_nextSample(&voice1);
+      voice_update_envs(&voice1);
+      buffer1[(!DMA_GetCurrentMemoryTarget(DMA1_Stream5))*BUFFER_SIZE+ptr1] = (uint16_t)((1.f+voice_next_sample(&voice1))*32578.f);
       ptr1++;
       //channel2
-      buffer1[(!DMA_GetCurrentMemoryTarget(DMA1_Stream6))*BUFFER_SIZE+ptr1] = voice_nextSample(&voice2);
+      buffer1[(!DMA_GetCurrentMemoryTarget(DMA1_Stream5))*BUFFER_SIZE+ptr1] = 0;
       ptr1++;
       //channel3
-      buffer1[(!DMA_GetCurrentMemoryTarget(DMA1_Stream6))*BUFFER_SIZE+ptr1] = 0;
+      buffer1[(!DMA_GetCurrentMemoryTarget(DMA1_Stream5))*BUFFER_SIZE+ptr1] = 0;
       ptr1++;
     }
     if(ptr2<BUFFER_SIZE) {
-      buffer2[(!DMA_GetCurrentMemoryTarget(DMA1_Stream5))*BUFFER_SIZE+ptr2] = voice_nextSample(&voice3);
+      buffer2[(!DMA_GetCurrentMemoryTarget(DMA1_Stream6))*BUFFER_SIZE+ptr2] = 0;
       ptr2++;
-      buffer2[(!DMA_GetCurrentMemoryTarget(DMA1_Stream5))*BUFFER_SIZE+ptr2] = 0;
+      buffer2[(!DMA_GetCurrentMemoryTarget(DMA1_Stream6))*BUFFER_SIZE+ptr2] = 0;
       ptr2++;
-      buffer2[(!DMA_GetCurrentMemoryTarget(DMA1_Stream5))*BUFFER_SIZE+ptr2] = 0;
+      buffer2[(!DMA_GetCurrentMemoryTarget(DMA1_Stream6))*BUFFER_SIZE+ptr2] = 0;
       ptr2++;
     }
   }
@@ -172,7 +171,7 @@ DMA_Config(DMA_Stream_TypeDef *stream, volatile uint16_t *buffer_top, volatile u
 
   DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)buffer_top;
   DMA_InitStructure.DMA_BufferSize = buffer_size;
-  DMA_InitStructure.DMA_PeripheralBaseAddr = ((dac_channel == DAC_Channel_1) ? DAC_DHR12R1_ADDRESS : DAC_DHR12R2_ADDRESS);
+  DMA_InitStructure.DMA_PeripheralBaseAddr = ((dac_channel == DAC_Channel_1) ? DAC_DHR12L1_ADDRESS : DAC_DHR12L2_ADDRESS);
 
   DMA_ITConfig(stream, DMA_IT_TC, ENABLE);
 
@@ -199,7 +198,7 @@ DAC_TIM_Config(void)
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
   
   TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
-  TIM_TimeBaseStructure.TIM_Period = 0x800-1;
+  TIM_TimeBaseStructure.TIM_Period = 0x400-1;
   TIM_TimeBaseStructure.TIM_Prescaler = 0;
   TIM_TimeBaseStructure.TIM_ClockDivision = 0;
   TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; 
@@ -235,7 +234,7 @@ Strobe_TIM_Config(void)
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE); 
   
   TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
-  TIM_TimeBaseStructure.TIM_Period = 0x600-1;
+  TIM_TimeBaseStructure.TIM_Period = 0x200-1;
   TIM_TimeBaseStructure.TIM_Prescaler = 0;
   TIM_TimeBaseStructure.TIM_ClockDivision = 0;
   TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; 
@@ -244,7 +243,7 @@ Strobe_TIM_Config(void)
   TIM_OCStructInit(&TIM_OCInitStructure);
   TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2;
   TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-  TIM_OCInitStructure.TIM_Pulse = 0x170;
+  TIM_OCInitStructure.TIM_Pulse = 0xA0;
   TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low;
   TIM_OC3Init(TIM5, &TIM_OCInitStructure); 
   

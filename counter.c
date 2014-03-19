@@ -9,7 +9,9 @@ void counter_init(struct counter_t *c, uint32_t max)
 
 uint32_t counter_tick(struct counter_t *c)
 {
-  return c->count = (c->count+1)%c->max;
+  uint32_t val = c->count;
+  c->count = (c->count+1)%c->max;
+  return val;
 }
 
 uint32_t counter_val(struct counter_t *c)
