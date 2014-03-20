@@ -41,14 +41,14 @@ voice_trigger (struct voice_t *voice )
 float
 voice_next_sample ( struct voice_t *voice )
 {
-  voice->output_buffer = 0;
-
   for (int i=0; i<NUM_OPS; i++)
   {
     op_update_phase(&voice->ops[i]);
   }
 
-  return (*algorithms[voice->algorithm])(voice);
+  voice->output_buffer = (*algorithms[voice->algorithm])(voice);
+
+  return voice->output_buffer;
 }
 
 void

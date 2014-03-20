@@ -92,7 +92,7 @@ DEFS    += -DSTM32F40XX
 
 ## Compiler options
 CFLAGS  = -ggdb
-#CFLAGS += -O3
+CFLAGS += -O3
 CFLAGS += -Wall -Wextra -Warray-bounds
 CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m4 -mthumb-interwork
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16

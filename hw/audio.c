@@ -90,7 +90,7 @@ Strobe_TIM_Config(void)
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE); 
   
   TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
-  TIM_TimeBaseStructure.TIM_Period = 0x200-1;
+  TIM_TimeBaseStructure.TIM_Period = 0x3A0-1;
   TIM_TimeBaseStructure.TIM_Prescaler = 0;
   TIM_TimeBaseStructure.TIM_ClockDivision = 0;
   TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; 
@@ -99,7 +99,7 @@ Strobe_TIM_Config(void)
   TIM_OCStructInit(&TIM_OCInitStructure);
   TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2;
   TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-  TIM_OCInitStructure.TIM_Pulse = 0xA0;
+  TIM_OCInitStructure.TIM_Pulse = 0xF0;
   TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low;
   TIM_OC3Init(TIM5, &TIM_OCInitStructure); 
   
@@ -137,20 +137,16 @@ DAC_Config(uint32_t dac_channel)
 }
 
 void
-audio_init (volatile uint16_t *buffer1, volatile uint16_t *buffer2, uint16_t bufsize)
+audio_init (volatile uint16_t *buffer1, volatile uint16_t *buffer2, uint16_t bufsize, uint16_t num_channels)
 { 
-  counter_init(&sh_counter, 3);
+  counter_init(&sh_counter, num_channels);
 
-  /* Preconfiguration before using DAC----------------------------------------*/
   GPIO_InitTypeDef GPIO_InitStructure;
 
-  /* DMA1 clock and GPIOA clock enable (to be used with DAC) */
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1 | RCC_AHB1Periph_GPIOA, ENABLE);
 
-  /* DAC Periph clock enable */
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_DAC, ENABLE);
 
-  /* DAC channel 1 & 2 (DAC_OUT1 = PA.4)(DAC_OUT2 = PA.5) configuration */
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;

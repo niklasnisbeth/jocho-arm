@@ -4,7 +4,7 @@
 #define DAC_DHR12L1_ADDRESS 0x4000740C
 #define DAC_DHR12L2_ADDRESS 0x40007418 
 
-void audio_init(volatile uint16_t *buffer1, volatile uint16_t *buffer2, uint16_t bufsize);
+void audio_init(volatile uint16_t *buffer1, volatile uint16_t *buffer2, uint16_t bufsize, uint16_t num_channels);
 extern struct counter_t sh_counter;
 
 /*

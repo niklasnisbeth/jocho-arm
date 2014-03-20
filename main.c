@@ -8,7 +8,9 @@
 #include "counter.h"
 
 #define SINE_SIZE 1024
-#define BUFFER_SIZE 16*3
+
+#define NUM_CHANNELS 2
+#define BUFFER_SIZE 32*NUM_CHANNELS
 
 volatile uint16_t buffer1[BUFFER_SIZE*2];
 volatile uint16_t buffer2[BUFFER_SIZE*2];
@@ -19,8 +21,6 @@ struct voice_t voice1;
 struct voice_t voice2;
 struct voice_t voice3;
 struct voice_t voice4;
-struct voice_t voice5;
-struct voice_t voice6;
 
 float sinevals[SINE_SIZE];
 struct wavetable_t sinetable;
@@ -61,6 +61,8 @@ TIM4_IRQHandler(void)
 int 
 main(void)
 { 
+  wt_generate_sine(sinevals, SINE_SIZE);
+
   sinetable.vals = sinevals;
   sinetable.size = SINE_SIZE; 
 
@@ -68,40 +70,33 @@ main(void)
   voice_init(&voice2, &sinetable);
   voice_init(&voice3, &sinetable);
   voice_init(&voice4, &sinetable);
-  voice_init(&voice5, &sinetable);
-  voice_init(&voice6, &sinetable);
 
   voice_trigger(&voice1);
   voice_trigger(&voice2);
   voice_trigger(&voice3);
   voice_trigger(&voice4);
-  voice_trigger(&voice5);
-  voice_trigger(&voice6);
 
-  audio_init(buffer1, buffer2, BUFFER_SIZE);
+  audio_init(buffer1, buffer2, BUFFER_SIZE, NUM_CHANNELS);
 
   while(1) {
     if(ptr1<BUFFER_SIZE) {
       voice_update_envs(&voice1);
-      buffer1[(!DMA_GetCurrentMemoryTarget(DMA1_Stream5))*BUFFER_SIZE+ptr1] =
-        (uint16_t)((1.f+voice_next_sample(&voice1))*32578.f);
+      buffer1[((!DMA_GetCurrentMemoryTarget(DMA1_Stream5))*BUFFER_SIZE)+ptr1] =
+        (uint16_t)((1.f+voice_next_sample(&voice1))*32578.f); 
       ptr1++;
       voice_update_envs(&voice2);
-      buffer1[(!DMA_GetCurrentMemoryTarget(DMA1_Stream5))*BUFFER_SIZE+ptr1] = 0;
-      ptr1++;
-      voice_update_envs(&voice3);
-      buffer1[(!DMA_GetCurrentMemoryTarget(DMA1_Stream5))*BUFFER_SIZE+ptr1] = 0;
+      buffer1[((!DMA_GetCurrentMemoryTarget(DMA1_Stream5))*BUFFER_SIZE)+ptr1] = 
+        (uint16_t)((1.f+voice_next_sample(&voice2))*32578.f);
       ptr1++;
     }
     if(ptr2<BUFFER_SIZE) {
-      voice_update_envs(&voice4);
-      buffer2[(!DMA_GetCurrentMemoryTarget(DMA1_Stream6))*BUFFER_SIZE+ptr2] = 0;
+      voice_update_envs(&voice3);
+      buffer2[((!DMA_GetCurrentMemoryTarget(DMA1_Stream6))*BUFFER_SIZE)+ptr2] =
+        (uint16_t)((1.f+voice_next_sample(&voice3))*32578.f); 
       ptr2++;
-      voice_update_envs(&voice5);
-      buffer2[(!DMA_GetCurrentMemoryTarget(DMA1_Stream6))*BUFFER_SIZE+ptr2] = 0;
-      ptr2++;
-      voice_update_envs(&voice6);
-      buffer2[(!DMA_GetCurrentMemoryTarget(DMA1_Stream6))*BUFFER_SIZE+ptr2] = 0;
+      //voice_update_envs(&voice4);
+      buffer2[((!DMA_GetCurrentMemoryTarget(DMA1_Stream6))*BUFFER_SIZE)+ptr2] = 
+        0; //(uint16_t)((1.f+voice_next_sample(&voice4))*32578.f);
       ptr2++;
     }
   }
