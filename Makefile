@@ -1,5 +1,5 @@
 # Name of the binaries.
-PROJ_NAME=dac-dma-test
+PROJ_NAME=jocho-arm
 
 ######################################################################
 #                         SETUP SOURCES                              #
@@ -25,7 +25,8 @@ vpath %.c $(SRC_DIRS)
 
 # My source file
 SRCS = main.c counter.c 
-SRCS += synth/env.c synth/op.c synth/algorithms.c synth/voice.c
+SRCS += hw/audio.c
+SRCS += synth/env.c synth/op.c synth/algorithms.c synth/voice.c synth/wt.c
 
 
 # Contains initialisation code and must be compiled into

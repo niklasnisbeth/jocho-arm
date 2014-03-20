@@ -35,7 +35,6 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-extern __IO uint8_t SelectedWavesForm, KeyPressed;
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -162,17 +161,6 @@ void SysTick_Handler(void)
   * @retval None
   */
 void EXTI0_IRQHandler(void)
-{
-  if(EXTI_GetITStatus(USER_BUTTON_EXTI_LINE) != RESET)
-  { 
-    /* Change the wave */
-    KeyPressed = 0;
-
-    /* Change the selected waves forms */
-    SelectedWavesForm = !SelectedWavesForm;
-
-    /* Clear the Right Button EXTI line pending bit */
-    EXTI_ClearITPendingBit(USER_BUTTON_EXTI_LINE);
   }
 }
 /**
